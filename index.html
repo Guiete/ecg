@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Trauma - Escala de Glasgow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .case-container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        select {
+            padding: 5px;
+            margin: 5px 0;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .score {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .response-comparison {
+            margin: 15px 0;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .response-comparison th, .response-comparison td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .response-comparison th {
+            background-color: #f2f2f2;
+        }
+        .correct-answer {
+            background-color: #dff0d8;
+        }
+        .incorrect-answer {
+            background-color: #f2dede;
+        }
+        .help-btn {
+            background-color: #2196F3;
+        }
+        .help-btn:hover {
+            background-color: #0b7dda;
+        }
+        #help-table {
+            display: none;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .submit-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulador de Casos Clínicos de Trauma</h1>
+    <p>Teste seus conhecimentos na Escala de Coma de Glasgow com casos clínicos realistas.</p>
+    
+    <button id="help-btn" class="help-btn" onclick="toggleHelp()">Mostrar Ajuda</button>
+    
+    <div id="help-table">
+        <h3>Escala de Coma de Glasgow - Referência</h3>
+        <table border="1" style="width:100%">
+            <tr>
+                <th>Componente</th>
+                <th>Pontuação</th>
+                <th>Resposta</th>
+            </tr>
+            <tr>
+                <td rowspan="4">Abertura Ocular (E)</td>
+                <td>4</td>
+                <td>Espontânea</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>À voz</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>À dor</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Nenhuma</td>
+            </tr>
+            <tr>
+                <td rowspan="5">Resposta Verbal (V)</td>
+                <td>5</td>
+                <td>Orientado</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Confuso</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Palavras inadequadas</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Sons incompreensíveis</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Nenhuma</td>
+            </tr>
+            <tr>
+                <td rowspan="6">Resposta Motora (M)</td>
+                <td>6</td>
+                <td>Obedece comandos</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Localiza dor</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Retirada à dor</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Flexão anormal (decorticação)</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Extensão anormal (descerebração)</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Nenhuma</td>
+            </tr>
+            <tr>
+                <td rowspan="3">Reflexo Pupilar (P)</td>
+                <td>0</td>
+                <td>Reação bilateral</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Apenas uma pupila reage</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Sem reação bilateral</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div id="case-container" class="case-container">
+        <h2 id="case-title">Carregando caso clínico...</h2>
+        <div id="case-description"></div>
+        
+        <div class="question">1. Resposta ocular (E):</div>
+        <select id="eye-response">
+            <option value="">Selecione...</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+        </select>
+        
+        <div class="question">2. Resposta verbal (V):</div>
+        <select id="verbal-response">
+            <option value="">Selecione...</option>
+            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+        </select>
+        
+        <div class="question">3. Resposta motora (M):</div>
+        <select id="motor-response">
+            <option value="">Selecione...</option>
+            <option value="6">6</option>
+            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+        </select>
+        
+        <div class="question">4. Reflexo pupilar (P):</div>
+        <select id="pupil-response">
+            <option value="">Selecione...</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </select>
+        
+        <div class="submit-container">
+            <button id="submit-btn" onclick="checkAnswers()">Verificar Respostas</button>
+        </div>
+        
+        <div id="feedback" class="feedback">
+            <h3>Resultado:</h3>
+            <div id="result-text"></div>
+            
+            <table class="response-comparison">
+                <tr>
+                    <th>Componente</th>
+                    <th>Sua Resposta</th>
+                    <th>Resposta Correta</th>
+                </tr>
+                <tr id="eye-comparison">
+                    <td>Abertura Ocular (E)</td>
+                    <td id="user-eye"></td>
+                    <td id="correct-eye"></td>
+                </tr>
+                <tr id="verbal-comparison">
+                    <td>Resposta Verbal (V)</td>
+                    <td id="user-verbal"></td>
+                    <td id="correct-verbal"></td>
+                </tr>
+                <tr id="motor-comparison">
+                    <td>Resposta Motora (M)</td>
+                    <td id="user-motor"></td>
+                    <td id="correct-motor"></td>
+                </tr>
+                <tr id="pupil-comparison">
+                    <td>Reflexo Pupilar (P)</td>
+                    <td id="user-pupil"></td>
+                    <td id="correct-pupil"></td>
+                </tr>
+            </table>
+            
+            <div id="score" class="score"></div>
+            <div id="explanation" class="explanation"></div>
+            <button onclick="generateNewCase()">Novo Caso</button>
+        </div>
+    </div>
+    
+    <script>
+        // Banco de casos clínicos
+const cases = [
+    // Casos leves (ECG 13-15)
+    {
+        title: "Caso 1 - Trauma Craniano Leve",
+        description: "Paciente de 18 anos, vítima de queda durante prática esportiva. Está acordado, orientado, queixando-se de cefaleia leve. Abre os olhos espontaneamente, conversa normalmente e obedece a todos os comandos. Reflexos pupilares normais bilateralmente.",
+        correctAnswers: { eye: 4, verbal: 5, motor: 6, pupil: 0 },
+        explanation: "ECG 15 (E4V5M6P0) - Trauma craniano leve. Paciente totalmente orientado e responsivo."
+    },
+    {
+        title: "Caso 2 - Concussão Cerebral",
+        description: "Paciente de 25 anos, atropelamento leve. Está acordado mas confuso sobre o evento, não lembra exatamente como ocorreu o acidente. Abre os olhos espontaneamente, fala de forma um pouco confusa mas obedece a comandos. Pupilas normais.",
+        correctAnswers: { eye: 4, verbal: 4, motor: 6, pupil: 0 },
+        explanation: "ECG 14 (E4V4M6P0) - Concussão cerebral com confusão temporária."
+    },
+    
+    // Casos moderados (ECG 9-12)
+    {
+        title: "Caso 3 - TCE Moderado",
+        description: "Paciente de 30 anos, acidente de bicicleta sem capacete. Abre os olhos apenas quando chamado pelo nome, responde com palavras desconexas ('casa... trabalho... dói...') e retira o membro quando estimulado com dor. Reflexo pupilar presente bilateralmente.",
+        correctAnswers: { eye: 3, verbal: 3, motor: 4, pupil: 0 },
+        explanation: "ECG 10 (E3V3M4P0) - TCE moderado com alteração importante da consciência."
+    },
+    {
+        title: "Caso 4 - Intoxicação Alcoólica + Trauma",
+        description: "Paciente de 40 anos, etilista crônico, queda da própria altura. Só abre os olhos com estímulo doloroso, emite sons incompreensíveis e retira membro à dor. Pupilas levemente hiporreativas.",
+        correctAnswers: { eye: 2, verbal: 2, motor: 4, pupil: 1 },
+        explanation: "ECG 8 (E2V2M4P1) - Quadro misto de intoxicação alcoólica e trauma."
+    },
+
+    // Casos graves (ECG ≤8)
+    {
+        title: "Caso 5 - TCE Grave",
+        description: "Paciente de 22 anos, acidente de moto em alta velocidade. Não abre os olhos a nenhum estímulo, emite apenas gemidos e apresenta postura de descerebração à dor. Pupilas arreativas.",
+        correctAnswers: { eye: 1, verbal: 2, motor: 2, pupil: 2 },
+        explanation: "ECG 5 (E1V2M2P2) - TCE grave com mau prognóstico."
+    },
+    {
+        title: "Caso 6 - Afogamento + Hipóxia",
+        description: "Criança de 8 anos resgatada após afogamento. Sem abertura ocular, sem resposta verbal, flexão anormal à dor. Pupilas com reação lenta e assimétrica.",
+        correctAnswers: { eye: 1, verbal: 1, motor: 3, pupil: 1 },
+        explanation: "ECG 5 (E1V1M3P1) - Lesão hipóxico-isquêmica grave."
+    },
+
+    // Casos com variações pupilares
+    {
+        title: "Caso 7 - Hematoma Extradural",
+        description: "Paciente de 35 anos, trauma craniano com intervalo lúcido. Agora não abre os olhos, não verbaliza, decortica à dor. Pupila direita dilatada e arreativa, esquerda normal.",
+        correctAnswers: { eye: 1, verbal: 1, motor: 3, pupil: 1 },
+        explanation: "ECG 5 (E1V1M3P1) - Sinais de herniação uncal por hematoma extradural."
+    },
+    {
+        title: "Caso 8 - Midríase Paralítica",
+        description: "Paciente de 50 anos, TCE grave há 3 dias. Sem abertura ocular, sem fala, extensão à dor. Pupilas bilaterais dilatadas e arreativas.",
+        correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+        explanation: "ECG 4 (E1V1M2P2) - Midríase paralítica por morte encefálica."
+    },
+
+    // Casos pediátricos
+    {
+        title: "Caso 9 - Trauma Pediátrico (2 anos)",
+        description: "Criança de 2 anos, queda de berço. Chora mas não consola, não segue objetos com os olhos, movimenta todos os membros espontaneamente. Pupilas normais.",
+        correctAnswers: { eye: 3, verbal: 3, motor: 6, pupil: 0 },
+        explanation: "ECG 12 (E3V3M6P0) - Adaptação da ECG para pediatria - choro inconsolável equivale a palavras inadequadas."
+    },
+    {
+        title: "Caso 10 - Síndrome do Bebê Sacudido",
+        description: "Lactente de 8 meses, pais relatam 'queda do sofá'. Letárgico, não abre os olhos, choro fraco, hipotonia generalizada. Pupilas com anisocoria.",
+        correctAnswers: { eye: 1, verbal: 2, motor: 1, pupil: 1 },
+        explanation: "ECG 4 (E1V2M1P1) - Suspeitar sempre de trauma não acidental nesta faixa etária."
+    },
+
+    // Continuando com mais casos variados...
+    {
+        title: "Caso 11 - Acidente Automobilístico",
+        description: "Paciente de 28 anos, colisão frontal sem cinto de segurança. Acordado mas confuso, abre olhos espontaneamente, desorientado no tempo, obedece comandos simples. Pupilas normais.",
+        correctAnswers: { eye: 4, verbal: 4, motor: 6, pupil: 0 },
+        explanation: "ECG 14 (E4V4M6P0) - TCE leve com provável concussão."
+    },
+    
+    {
+        title: "Caso 12 - Idoso com SDH",
+        description: "Paciente de 72 anos, queda domiciliar há 3 dias. Letárgico, abre olhos apenas à voz, conversa confusa, fraqueza em hemicorpo direito. Pupila esquerda mais reativa que direita.",
+        correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 1 },
+        explanation: "ECG 12 (E3V4M5P1) - Suspeita de hematoma subdural crônico em idoso."
+    },
+    
+    {
+        title: "Caso 13 - Traumatismo Raquimedular",
+        description: "Paciente de 45 anos, queda de altura. Acordado, orientado, sem déficits cognitivos mas com paraplegia. Pupilas normais.",
+        correctAnswers: { eye: 4, verbal: 5, motor: 1, pupil: 0 },
+        explanation: "ECG 10 (E4V5M1P0) - ECG pode ser normal em trauma raquimedular sem comprometimento cerebral."
+    },
+    
+    {
+        title: "Caso 14 - Overdose de Opiáceos",
+        description: "Paciente de 33 anos encontrado inconsciente com seringa ao lado. Não abre olhos, não verbaliza, apenas retirada mínima à dor extrema. Pupilas puntiformes.",
+        correctAnswers: { eye: 1, verbal: 1, motor: 4, pupil: 0 },
+        explanation: "ECG 6 (E1V1M4P0) - Triade clássica de overdose: coma, depressão respiratória, miose."
+    },
+    
+    {
+        title: "Caso 15 - Eclampsia",
+        description: "Gestante de 32 anos, 38 semanas, convulsões tônico-clônicas. Inconsciente, olhos fechados, sem verbalização, movimentos de extensão durante crise. Pupilas reativas.",
+        correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 0 },
+        explanation: "ECG 4 (E1V1M2P0) - Emergência obstétrica com risco de vida materno-fetal."
+    },
+    
+    // [...] (continuação com mais casos)
+
+    // Casos com condições especiais
+    {
+        title: "Caso 16 - Paciente com Afasia",
+        description: "Paciente de 68 anos com AVC prévio afásico, nova queda. Acordado, olhos abertos, tenta se comunicar mas apenas emite sons ininteligíveis, obedece a gestos. Pupilas normais.",
+        correctAnswers: { eye: 4, verbal: 2, motor: 6, pupil: 0 },
+        explanation: "ECG 12 (E4V2M6P0) - Pacientes com déficits neurológicos prévios exigem avaliação cuidadosa."
+    },
+    
+    {
+        title: "Caso 17 - Intoxicação por CO",
+        description: "Paciente de 40 anos encontrado em garagem fechada com carro ligado. Sonolento, desorientado, abre olhos à voz, responde confusamente, obedece a comandos. Pupilas levemente dilatadas.",
+        correctAnswers: { eye: 3, verbal: 4, motor: 6, pupil: 1 },
+        explanation: "ECG 13 (E3V4M6P1) - Carboxihemoglobina pode causar sintomas neurológicos variados."
+    },
+    
+    // [...] (adicionar mais casos até completar 100)
+
+    // Últimos casos (exemplo)
+    {
+        title: "Caso 100 - Politrauma Complexo",
+        description: "Paciente de 25 anos, vítima de explosão. Inconsciente, sem abertura ocular, sem verbalização, resposta motora apenas de retirada à dor. Pupila direita arreativa, esquerda hiporreativa.",
+        correctAnswers: { eye: 1, verbal: 1, motor: 4, pupil: 1 },
+        explanation: "ECG 7 (E1V1M4P1) - Politrauma grave com provável TCE + lesões associadas."
+    },
+    
+    
+    // Casos 18 a 30
+{
+    title: "Caso 18 - Epilepsia Pós-Traumática",
+    description: "Paciente de 19 anos, conhecido epiléptico, teve crise tônico-clônica após pancada na cabeça. Pós-ictal, abre olhos ao chamado, emite sons confusos e flexiona membros ao estímulo doloroso. Pupilas normorreagentes.",
+    correctAnswers: { eye: 3, verbal: 2, motor: 3, pupil: 0 },
+    explanation: "ECG 8 (E3V2M3P0) - Estado pós-ictal com rebaixamento neurológico temporário."
+},
+{
+    title: "Caso 19 - AVC Hemorrágico Extenso",
+    description: "Paciente de 70 anos, hipertenso, encontrado caído em casa. Não abre os olhos, emite sons incompreensíveis, extensão dos membros à dor. Pupilas anisocóricas, uma arreativa.",
+    correctAnswers: { eye: 1, verbal: 2, motor: 2, pupil: 1 },
+    explanation: "ECG 6 (E1V2M2P1) - Sinais de hipertensão intracraniana grave e possível herniação."
+},
+{
+    title: "Caso 20 - Trauma com Lesão Facial Grave",
+    description: "Paciente de 45 anos com múltiplas fraturas faciais após acidente. Olhos inchados sem abertura espontânea, balbucia palavras, retira à dor. Pupilas com reflexo preservado.",
+    correctAnswers: { eye: 2, verbal: 3, motor: 4, pupil: 0 },
+    explanation: "ECG 9 (E2V3M4P0) - TCE moderado com lesão anatômica dificultando avaliação ocular."
+},
+{
+    title: "Caso 21 - Meningite Bacteriana",
+    description: "Adolescente de 17 anos com febre alta, rigidez de nuca, confusão mental. Abre olhos à voz, linguagem incoerente, retira à dor. Pupilas isocóricas e fotorreagentes.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 4, pupil: 0 },
+    explanation: "ECG 10 (E3V3M4P0) - Quadro de infecção neurológica com comprometimento de consciência."
+},
+{
+    title: "Caso 22 - Hipoglicemia Severa",
+    description: "Paciente diabético de 60 anos, encontrado desmaiado. Abre olhos com estímulo doloroso, emite sons incompreensíveis, resposta flexora à dor. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 3, pupil: 0 },
+    explanation: "ECG 7 (E2V2M3P0) - Quadro grave, porém reversível com correção da glicemia."
+},
+{
+    title: "Caso 23 - TCE + Uso de Benzodiazepínicos",
+    description: "Paciente de 36 anos, queda de bicicleta, uso regular de clonazepam. Sonolento, abre olhos ao chamado, fala palavras desconexas, obedece comandos simples. Pupilas discretamente hiporreativas.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 6, pupil: 1 },
+    explanation: "ECG 13 (E3V3M6P1) - Efeito depressor central potencializado por trauma."
+},
+{
+    title: "Caso 24 - Convulsão Recente",
+    description: "Paciente de 29 anos, presenciado em crise convulsiva. No pós-ictal imediato, olhos fechados, emite gemidos, sem resposta motora ao estímulo. Pupilas reativas à luz.",
+    correctAnswers: { eye: 1, verbal: 2, motor: 1, pupil: 0 },
+    explanation: "ECG 4 (E1V2M1P0) - Rebaixamento profundo pós-ictal, requer vigilância neurológica."
+},
+{
+    title: "Caso 25 - Crise Hipertensiva + AVC Isquêmico",
+    description: "Paciente de 68 anos, PA 240x130 mmHg, hemiplegia esquerda. Acordado, abre olhos espontaneamente, fala confusamente, não move lado esquerdo, responde comandos com membro direito. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 13 (E4V4M5P0) - AVC isquêmico com déficit motor assimétrico."
+},
+{
+    title: "Caso 26 - Infecção de Sítio Cirúrgico + Sepse",
+    description: "Paciente de 50 anos, pós-operatório recente, febril, confuso, olhos abrem à voz, responde frases sem sentido, retira à dor. Pupilas reativas.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 4, pupil: 0 },
+    explanation: "ECG 10 (E3V3M4P0) - Encefalopatia séptica com rebaixamento neurológico."
+},
+{
+    title: "Caso 27 - Queda de Escada + Etilismo",
+    description: "Homem de 55 anos, histórico de etilismo crônico. Olhos não abrem, grunhidos incompreensíveis, extensão dos braços ao estímulo doloroso. Pupilas anisocóricas, uma arreativa.",
+    correctAnswers: { eye: 1, verbal: 2, motor: 2, pupil: 1 },
+    explanation: "ECG 6 (E1V2M2P1) - TCE grave com comprometimento de tronco encefálico."
+},
+{
+    title: "Caso 28 - Hipotermia Grave",
+    description: "Paciente encontrado em rua após noite fria, hipotérmico, bradicárdico. Olhos fechados, emite sons, responde lentamente à dor com retirada. Pupilas normais.",
+    correctAnswers: { eye: 1, verbal: 2, motor: 4, pupil: 0 },
+    explanation: "ECG 7 (E1V2M4P0) - Quadro de depressão neurológica por hipotermia severa."
+},
+{
+    title: "Caso 29 - Lesão Cortical Difusa",
+    description: "Paciente de 42 anos, politrauma. Abre olhos com dor, emite sons confusos, flexiona membros à dor. Pupilas levemente reativas.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 3, pupil: 1 },
+    explanation: "ECG 8 (E2V2M3P1) - Lesão cortical com sinais de disfunção neurológica difusa."
+},
+{
+    title: "Caso 30 - AVC de Tronco Encefálico",
+    description: "Paciente de 65 anos, subitamente inconsciente. Não abre olhos, não verbaliza, postura extensora à dor. Pupilas bilateralmente midriáticas e arreativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+    explanation: "ECG 6 (E1V1M2P2) - Quadro sugestivo de infarto de tronco encefálico com mau prognóstico."
+},
+    // Casos 31 a 45
+{
+    title: "Caso 31 - Tumor Cerebral com Efeito de Massa",
+    description: "Paciente de 59 anos, cefaleia progressiva e vômitos. Sonolento, abre olhos à dor, emite palavras incompreensíveis, extensão ao estímulo doloroso. Pupilas anisocóricas, uma não reage à luz.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 2, pupil: 1 },
+    explanation: "ECG 7 (E2V2M2P1) - Efeito de massa com sinais de hipertensão intracraniana."
+},
+{
+    title: "Caso 32 - TCE Leve com Alcoolismo Agudo",
+    description: "Homem de 34 anos, etilizado, queda com trauma craniano. Abre olhos espontaneamente, fala de forma desorganizada, obedece comandos. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 4, motor: 6, pupil: 0 },
+    explanation: "ECG 14 (E4V4M6P0) - Confusão leve por álcool associada a TCE leve."
+},
+{
+    title: "Caso 33 - Envenenamento com Organofosforado",
+    description: "Paciente de 41 anos, tentativa de suicídio por agrotóxicos. Não abre olhos, sem fala, extensão dos membros. Pupilas puntiformes e pouco reativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 5 (E1V1M2P1) - Tóxico grave com rebaixamento profundo e sinais colinérgicos."
+},
+{
+    title: "Caso 34 - Crise Hiperglicêmica com Cetoacidose",
+    description: "Mulher de 25 anos, diabética tipo 1, hiperventilando, sonolenta. Abre olhos ao chamado, fala frases desconexas, flexiona à dor. Pupilas reativas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 3, pupil: 0 },
+    explanation: "ECG 10 (E3V4M3P0) - Cetoacidose com comprometimento neurológico leve a moderado."
+},
+{
+    title: "Caso 35 - Hematoma Subdural Agudo",
+    description: "Homem de 72 anos, após queda. Não abre olhos, emite sons incompreensíveis, extensão dos membros ao estímulo. Pupilas anisocóricas, uma arreativa.",
+    correctAnswers: { eye: 1, verbal: 2, motor: 2, pupil: 1 },
+    explanation: "ECG 6 (E1V2M2P1) - Sinais de herniação uncal com comprometimento grave."
+},
+{
+    title: "Caso 36 - Síndrome de Guillain-Barré",
+    description: "Paciente de 33 anos, parestesias e fraqueza ascendente. Consciente, olhos abrem espontaneamente, fala normal, obedece comandos. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 6, pupil: 0 },
+    explanation: "ECG 15 (E4V5M6P0) - Quadro motor periférico com preservação da consciência."
+},
+{
+    title: "Caso 37 - Edema Cerebral por Hepatopatia",
+    description: "Homem de 48 anos, cirrótico, rebaixado. Abre olhos à voz, frases sem sentido, flexão à dor. Pupilas isocóricas e reativas.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 3, pupil: 0 },
+    explanation: "ECG 9 (E3V3M3P0) - Encefalopatia hepática com comprometimento cortical difuso."
+},
+{
+    title: "Caso 38 - Afogamento com Parada Prolongada",
+    description: "Criança de 9 anos, vítima de afogamento, ressuscitada após 10 minutos. Não abre olhos, sem verbalização, sem resposta motora. Pupilas arreativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 1, pupil: 2 },
+    explanation: "ECG 5 (E1V1M1P2) - Anóxia cerebral grave com provável lesão irreversível."
+},
+{
+    title: "Caso 39 - Choque Séptico em UTI",
+    description: "Paciente de 67 anos, em ventilação mecânica, sedado. Olhos não abrem, sem resposta verbal, sem movimento à dor. Pupilas fotorreagentes.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 1, pupil: 0 },
+    explanation: "ECG 3 (E1V1M1P0) - Sedação profunda; importante correlacionar com uso de drogas e sedativos."
+},
+{
+    title: "Caso 40 - Tumor de Fossa Posterior",
+    description: "Paciente de 12 anos, com náuseas e ataxia. Abre olhos ao chamado, linguagem confusa, localiza a dor. Pupilas isocóricas e reativas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 12 (E3V4M5P0) - Massa em fossa posterior com compressão de estruturas cerebelares."
+},
+{
+    title: "Caso 41 - Encefalite Viral",
+    description: "Mulher de 30 anos, febre alta, sonolência e convulsões. Abre olhos à dor, grunhidos, flexiona à dor. Pupilas reativas.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 3, pupil: 0 },
+    explanation: "ECG 7 (E2V2M3P0) - Encefalite com comprometimento cortical difuso."
+},
+{
+    title: "Caso 42 - Overdose de Heroína",
+    description: "Homem de 29 anos, usuário crônico, encontrado inconsciente. Não abre olhos, não fala, extensão dos braços. Pupilas puntiformes e pouco reativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 5 (E1V1M2P1) - Depressão grave do sistema nervoso central por opioide."
+},
+{
+    title: "Caso 43 - Hemorragia Subaracnoide",
+    description: "Mulher de 47 anos, início súbito de cefaleia intensa, rigidez de nuca. Abre olhos espontaneamente, fala frases confusas, obedece comandos. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 4, motor: 6, pupil: 0 },
+    explanation: "ECG 14 (E4V4M6P0) - Quadro inicial de HSA com consciência parcialmente preservada."
+},
+{
+    title: "Caso 44 - Lesão Medular Cervical Alta",
+    description: "Paciente de 40 anos, tetraplégico após acidente de carro. Olhos abertos espontaneamente, fala normal, sem resposta motora voluntária. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 1, pupil: 0 },
+    explanation: "ECG 10 (E4V5M1P0) - Nível alto de lesão medular com preservação de consciência."
+},
+{
+    title: "Caso 45 - Intoxicação por Anticolinérgico",
+    description: "Mulher de 21 anos, agitada, confusa, pupilas dilatadas. Olhos abrem ao som, fala frases desconexas, localiza dor. Pupilas midriáticas e pouco reativas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 1 },
+    explanation: "ECG 13 (E3V4M5P1) - Intoxicação central com alteração pupilar e agitação."
+},
+    
+    // Casos 46 a 60
+{
+    title: "Caso 46 - Trauma Torácico com Hipóxia",
+    description: "Homem de 45 anos, acidente de moto, dispneia severa e confusão. Abre olhos à dor, grunhidos, flexiona à dor. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 3, pupil: 0 },
+    explanation: "ECG 7 (E2V2M3P0) - Hipóxia cerebral com rebaixamento moderado do nível de consciência."
+},
+{
+    title: "Caso 47 - Estado Pós-Ictal",
+    description: "Mulher de 31 anos, epiléptica, pós-convulsão tônico-clônica. Olhos abertos ao som, fala confusa, obedece comandos. Pupilas reativas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 6, pupil: 0 },
+    explanation: "ECG 13 (E3V4M6P0) - Estado pós-ictal com rebaixamento transitório do sensório."
+},
+{
+    title: "Caso 48 - AVE Extenso em Hemisfério Esquerdo",
+    description: "Homem de 68 anos, afasia súbita, hemiplegia direita. Olhos abertos espontaneamente, emite sons incompreensíveis, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 2, motor: 5, pupil: 0 },
+    explanation: "ECG 11 (E4V2M5P0) - AVC cortical extenso com afasia de expressão."
+},
+{
+    title: "Caso 49 - Hipotermia Grave",
+    description: "Mulher de 55 anos, encontrada em ambiente gelado, inconsciente. Não abre olhos, sem fala, extensão dos membros. Pupilas arreativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+    explanation: "ECG 6 (E1V1M2P2) - Hipotermia profunda com disfunção neurológica difusa grave."
+},
+{
+    title: "Caso 50 - Tumor de Pineal",
+    description: "Adolescente de 16 anos, cefaleia, diplopia e dificuldade para olhar para cima. Olhos abertos espontaneamente, fala frases, obedece comandos. Pupilas midriáticas, lentas.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 6, pupil: 1 },
+    explanation: "ECG 15 (E4V5M6P1) - Síndrome de Parinaud com consciência preservada, alteração pupilar."
+},
+{
+    title: "Caso 51 - Meningite Bacteriana",
+    description: "Criança de 7 anos, febre alta, rigidez de nuca, confusão. Abre olhos ao som, fala frases confusas, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 12 (E3V4M5P0) - Comprometimento neurológico moderado por infecção meníngea."
+},
+{
+    title: "Caso 52 - Abcesso Cerebral",
+    description: "Homem de 36 anos, febre, confusão, hemiparesia esquerda. Abre olhos à dor, emite palavras inapropriadas, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 3, motor: 5, pupil: 0 },
+    explanation: "ECG 10 (E2V3M5P0) - Lesão focal com hipertensão intracraniana e rebaixamento de consciência."
+},
+{
+    title: "Caso 53 - Hipoglicemia Grave",
+    description: "Mulher de 24 anos, diabética, encontrada confusa. Abre olhos ao som, fala desconexa, retira estímulo doloroso. Pupilas reativas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 4, pupil: 0 },
+    explanation: "ECG 11 (E3V4M4P0) - Quadro reversível com risco de lesão neurológica se prolongado."
+},
+{
+    title: "Caso 54 - Trombose de Seio Venoso",
+    description: "Mulher puérpera de 32 anos, cefaleia, crises convulsivas, rebaixada. Abre olhos à dor, sem verbalização, extensão dos membros. Pupilas anisocóricas.",
+    correctAnswers: { eye: 2, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 6 (E2V1M2P1) - Sinais de hipertensão intracraniana com lesão secundária."
+},
+{
+    title: "Caso 55 - Tétano Generalizado",
+    description: "Homem de 52 anos, rigidez muscular, trismo, consciente. Abre olhos espontaneamente, fala preservada, obedece comandos. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 6, pupil: 0 },
+    explanation: "ECG 15 (E4V5M6P0) - Tônus aumentado sem comprometimento do nível de consciência."
+},
+{
+    title: "Caso 56 - Síndrome Locked-In",
+    description: "Paciente de 60 anos, tetraplégico após AVC de tronco, piscando intencionalmente. Olhos abertos espontaneamente, sem fala, sem movimento. Pupilas reativas.",
+    correctAnswers: { eye: 4, verbal: 1, motor: 1, pupil: 0 },
+    explanation: "ECG 6 (E4V1M1P0) - Consciente, mas aprisionado por lesão de ponte ventral."
+},
+{
+    title: "Caso 57 - Intoxicação por Benzodiazepínico",
+    description: "Mulher de 38 anos, sonolenta, respiração lenta. Abre olhos à voz, frases curtas, retira à dor. Pupilas isocóricas e lentas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 4, pupil: 1 },
+    explanation: "ECG 12 (E3V4M4P1) - Depressão do SNC com alteração leve pupilar por sedativo."
+},
+{
+    title: "Caso 58 - Hematoma Epidural",
+    description: "Adolescente de 17 anos, queda com TCE. Período lúcido, depois rebaixamento. Abre olhos à dor, emite sons incompreensíveis, extensão. Pupilas anisocóricas.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 2, pupil: 1 },
+    explanation: "ECG 7 (E2V2M2P1) - Emergência neurocirúrgica com sinal de herniação."
+},
+{
+    title: "Caso 59 - Doença de Parkinson Avançada",
+    description: "Idoso de 75 anos, bradicinesia severa, dificuldade de fala. Olhos abertos espontaneamente, fala monossilábica, obedece lentamente. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 4, motor: 6, pupil: 0 },
+    explanation: "ECG 14 (E4V4M6P0) - Déficit motor grave com cognição preservada."
+},
+{
+    title: "Caso 60 - Insuficiência Adrenal com Hiponatremia",
+    description: "Paciente de 28 anos, vômitos, hipotensão, confusão. Olhos abrem ao som, fala incoerente, flexiona à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 3, pupil: 0 },
+    explanation: "ECG 9 (E3V3M3P0) - Distúrbio eletrolítico causando encefalopatia."
+},
+    
+    // Casos 61 a 75
+{
+    title: "Caso 61 - Encefalite Herpética",
+    description: "Mulher de 42 anos, febre, confusão, crises convulsivas. Abre olhos ao som, palavras inadequadas, retira à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 4, pupil: 0 },
+    explanation: "ECG 10 (E3V3M4P0) - Infecção encefálica com rebaixamento moderado do nível de consciência."
+},
+{
+    title: "Caso 62 - Hipertermia Maligna",
+    description: "Paciente de 29 anos, após anestesia, rigidez, febre alta. Não abre olhos, sem fala, extensão dos membros. Pupilas midriáticas e lentas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 5 (E1V1M2P1) - Emergência metabólica grave com disfunção neurológica."
+},
+{
+    title: "Caso 63 - Hemorragia Intraventricular",
+    description: "Homem de 60 anos, súbito rebaixamento do nível de consciência. Não abre olhos, sem verbalização, extensão. Pupilas arreativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+    explanation: "ECG 6 (E1V1M2P2) - Lesão grave com sinais de hipertensão intracraniana e possível herniação."
+},
+{
+    title: "Caso 64 - Síndrome de Guillain-Barré",
+    description: "Mulher de 35 anos, paralisia ascendente, mas está alerta. Olhos abertos espontaneamente, fala normal, obedece comandos. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 6, pupil: 0 },
+    explanation: "ECG 15 (E4V5M6P0) - Paralisia periférica sem comprometimento do nível de consciência."
+},
+{
+    title: "Caso 65 - Infarto Cerebelar Extenso",
+    description: "Homem de 58 anos, ataxia, náuseas, rebaixamento progressivo. Olhos abrem ao som, fala confusa, flexiona à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 3, pupil: 0 },
+    explanation: "ECG 10 (E3V4M3P0) - Lesão em fossa posterior com sinais de comprometimento do tronco encefálico."
+},
+{
+    title: "Caso 66 - Hidrocefalia Aguda",
+    description: "Bebê de 8 meses, fontanela tensa, vômitos, sonolento. Abre olhos ao som, choro irregular, retira estímulo. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 4, pupil: 0 },
+    explanation: "ECG 10 (E3V3M4P0) - Aumento súbito da PIC com rebaixamento do sensório em lactente."
+},
+{
+    title: "Caso 67 - Morte Encefálica",
+    description: "Paciente de 40 anos, TCE grave, sem resposta a estímulos. Não abre olhos, sem verbalização, sem resposta motora. Pupilas fixas e dilatadas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 1, pupil: 2 },
+    explanation: "ECG 5 (E1V1M1P2) - Critérios clínicos compatíveis com morte encefálica."
+},
+{
+    title: "Caso 68 - Hepatopatia Crônica com Encefalopatia",
+    description: "Homem de 55 anos, histórico de cirrose, sonolento, fala lenta. Olhos abrem ao som, frases desconexas, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 12 (E3V4M5P0) - Encefalopatia hepática grau moderado com reversibilidade."
+},
+{
+    title: "Caso 69 - Intoxicação por Monóxido de Carbono",
+    description: "Família inteira encontrada inconsciente em casa. Este paciente não abre olhos, sem verbalização, extensão. Pupilas midriáticas e não reativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+    explanation: "ECG 6 (E1V1M2P2) - Hipóxia tecidual grave com encefalopatia tóxica."
+},
+{
+    title: "Caso 70 - Síndrome de Hiperamonemia",
+    description: "Mulher de 33 anos, vômitos, sonolência, confusão. Abre olhos ao som, palavras incoerentes, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 5, pupil: 0 },
+    explanation: "ECG 11 (E3V3M5P0) - Distúrbio metabólico com rebaixamento progressivo do nível de consciência."
+},
+{
+    title: "Caso 71 - Intoxicação por Organofosforado",
+    description: "Homem de 27 anos, sudorese, salivação, pupilas puntiformes, sonolento. Olhos abrem ao som, fala arrastada, localiza dor.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 1 },
+    explanation: "ECG 13 (E3V4M5P1) - Quadro colinérgico agudo com rebaixamento e alteração pupilar típica."
+},
+{
+    title: "Caso 72 - Esclerose Múltipla com Surto Agudo",
+    description: "Mulher de 26 anos, visão dupla, fraqueza em membros, mas consciente. Olhos abertos espontaneamente, fala normal, obedece comandos.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 6, pupil: 0 },
+    explanation: "ECG 15 (E4V5M6P0) - Comprometimento neurológico focal, sem alteração da consciência."
+},
+{
+    title: "Caso 73 - Tumor de Fossa Posterior",
+    description: "Criança de 10 anos, cefaleia matinal, vômitos, sonolência. Abre olhos à dor, fala frases incompletas, retira estímulo doloroso. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 4, motor: 4, pupil: 0 },
+    explanation: "ECG 10 (E2V4M4P0) - Sinais de hipertensão intracraniana com rebaixamento parcial."
+},
+{
+    title: "Caso 74 - Hiponatremia Grave",
+    description: "Paciente de 38 anos, confusão, náusea, convulsão. Olhos abrem ao som, sem fala, flexão à dor. Pupilas isocóricas e lentas.",
+    correctAnswers: { eye: 3, verbal: 1, motor: 3, pupil: 1 },
+    explanation: "ECG 8 (E3V1M3P1) - Distúrbio hidroeletrolítico com impacto cerebral agudo."
+},
+{
+    title: "Caso 75 - Lesão Medular Alta",
+    description: "Homem de 40 anos, após mergulho, tetraplégico, consciente. Olhos abertos espontaneamente, fala preservada, sem resposta motora. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 5, motor: 1, pupil: 0 },
+    explanation: "ECG 10 (E4V5M1P0) - Lesão medular alta sem envolvimento do nível de consciência."
+},
+    
+    // Casos 76 a 90
+{
+    title: "Caso 76 - Intoxicação por Álcool Etílico",
+    description: "Homem de 30 anos, alcoolizado, sonolento, fala arrastada. Olhos abrem ao som, frases desconexas, retira à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 4, pupil: 0 },
+    explanation: "ECG 11 (E3V4M4P0) - Depressão do SNC por álcool com rebaixamento leve a moderado."
+},
+{
+    title: "Caso 77 - Trauma Raquimedular com Choque Medular",
+    description: "Mulher de 36 anos, acidente, paralisia flácida, bradicardia. Olhos abrem ao som, fala confusa, sem resposta motora. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 1, pupil: 0 },
+    explanation: "ECG 8 (E3V4M1P0) - Lesão medular aguda com consciência preservada e ausência motora."
+},
+{
+    title: "Caso 78 - Síndrome de Reye",
+    description: "Criança de 6 anos, após virose e uso de aspirina, confusa e sonolenta. Olhos abrem ao som, fala inapropriada, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 5, pupil: 0 },
+    explanation: "ECG 11 (E3V3M5P0) - Encefalopatia aguda pediátrica com sinais de hipertensão intracraniana."
+},
+{
+    title: "Caso 79 - Hematoma Subgaleal em RN",
+    description: "Recém-nascido após parto complicado, apneico, sem resposta, pupilas fixas. Não abre olhos, sem choro, sem movimentos.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 1, pupil: 2 },
+    explanation: "ECG 5 (E1V1M1P2) - Grave comprometimento neurológico com risco de morte encefálica neonatal."
+},
+{
+    title: "Caso 80 - Paralisia do Sono",
+    description: "Mulher de 25 anos, desperta sem conseguir se mover, mas ouve e entende. Olhos abertos espontaneamente, não fala, sem resposta motora voluntária.",
+    correctAnswers: { eye: 4, verbal: 1, motor: 1, pupil: 0 },
+    explanation: "ECG 6 (E4V1M1P0) - Estado consciente, mas aprisionado, com motricidade inibida por distúrbio do sono."
+},
+{
+    title: "Caso 81 - Tumor Supratentorial",
+    description: "Paciente de 50 anos, cefaleia, crises focais, sonolento. Olhos abrem ao som, frases desconexas, flexão anormal à dor. Pupilas anisocóricas e lentas.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 3, pupil: 1 },
+    explanation: "ECG 11 (E3V4M3P1) - Sinais de aumento da pressão intracraniana e herniação incipiente."
+},
+{
+    title: "Caso 82 - Eclampsia Pós-Parto",
+    description: "Mulher 28 anos, pós-parto recente, convulsão, sonolenta. Abre olhos à dor, palavras inadequadas, retira à dor. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 3, motor: 4, pupil: 0 },
+    explanation: "ECG 9 (E2V3M4P0) - Encefalopatia hipertensiva com rebaixamento neurológico."
+},
+{
+    title: "Caso 83 - Trauma com Contusão Cerebral",
+    description: "Homem 35 anos, após queda, sonolento, hematoma frontal. Olhos abrem ao som, fala confusa, localiza estímulo. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 12 (E3V4M5P0) - TCE moderado com déficit neurológico focal, mas responsivo."
+},
+{
+    title: "Caso 84 - Infecção Generalizada (Sepse) com Encefalopatia",
+    description: "Paciente 60 anos, febre, pressão baixa, confuso. Olhos abertos ao som, frases incoerentes, retira estímulo doloroso. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 4, pupil: 0 },
+    explanation: "ECG 11 (E3V4M4P0) - Encefalopatia séptica moderada."
+},
+{
+    title: "Caso 85 - Hipotermia Grave",
+    description: "Paciente 70 anos, encontrado na rua no inverno. Não abre olhos, sem fala, extensão dos membros. Pupilas arreativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+    explanation: "ECG 6 (E1V1M2P2) - Hipotermia profunda com sinais de lesão neurológica grave."
+},
+{
+    title: "Caso 86 - Acidose Metabólica Grave",
+    description: "Paciente 45 anos, DKA (cetoacidose diabética), hiperventilando, confuso. Olhos abrem ao som, fala inapropriada, flexão à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 3, pupil: 0 },
+    explanation: "ECG 9 (E3V3M3P0) - Distúrbio metabólico agudo com rebaixamento do nível de consciência."
+},
+{
+    title: "Caso 87 - Hipertermia Exógena",
+    description: "Adolescente em rave, temperatura de 41°C, desorientado, agressivo. Olhos abertos espontaneamente, fala incoerente, localiza dor. Pupilas midriáticas.",
+    correctAnswers: { eye: 4, verbal: 3, motor: 5, pupil: 1 },
+    explanation: "ECG 13 (E4V3M5P1) - Quadro compatível com intoxicação por drogas e hipertermia induzida."
+},
+{
+    title: "Caso 88 - Hipo/hiperglicemia Grave",
+    description: "Idosa de 68 anos, confusa, tremores, olhos abrem à dor, palavras inapropriadas, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 3, motor: 5, pupil: 0 },
+    explanation: "ECG 10 (E2V3M5P0) - Alteração glicêmica com repercussão neurológica moderada."
+},
+{
+    title: "Caso 89 - Intoxicação por Benzodiazepínico",
+    description: "Mulher 40 anos, overdose, sonolenta, olhos abrem ao som, sem fala, resposta de retirada à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 1, motor: 4, pupil: 0 },
+    explanation: "ECG 8 (E3V1M4P0) - Depressão do SNC com grau importante de rebaixamento."
+},
+{
+    title: "Caso 90 - Crise Epiléptica Pós-Ictal",
+    description: "Homem de 28 anos, após convulsão tônico-clônica generalizada. Olhos abrem ao som, fala incoerente, flexão anormal. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 3, motor: 3, pupil: 0 },
+    explanation: "ECG 9 (E3V3M3P0) - Estado pós-ictal com melhora progressiva esperada."
+},
+    
+    // Casos 91 a 100
+{
+    title: "Caso 91 - Encefalite Viral Herpética",
+    description: "Homem 40 anos, febre alta, confusão e convulsões. Olhos abrem ao som, fala incompreensível, extensão anormal. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 2, motor: 2, pupil: 0 },
+    explanation: "ECG 7 (E3V2M2P0) - Comprometimento neurológico grave por infecção encefálica."
+},
+{
+    title: "Caso 92 - Tumor Cerebelar em Criança",
+    description: "Criança 8 anos, ataxia, vômitos e sonolência. Olhos abrem ao som, frases desconexas, retira à dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 4, pupil: 0 },
+    explanation: "ECG 11 (E3V4M4P0) - Sinais de hipertensão intracraniana com resposta motora preservada."
+},
+{
+    title: "Caso 93 - Hiponatremia Grave",
+    description: "Idosa 70 anos, confusa, torporosa. Olhos abrem à dor, fala incompreensível, extensão à dor. Pupilas normais.",
+    correctAnswers: { eye: 2, verbal: 2, motor: 2, pupil: 0 },
+    explanation: "ECG 6 (E2V2M2P0) - Distúrbio eletrolítico com rebaixamento grave da consciência."
+},
+{
+    title: "Caso 94 - AVC Hemorrágico em Ponte",
+    description: "Homem 60 anos, subitamente inconsciente, sem fala, não abre olhos, extensão anormal. Pupilas puntiformes e arreativas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 2 },
+    explanation: "ECG 6 (E1V1M2P2) - Hemorragia pontina com acometimento do tronco encefálico."
+},
+{
+    title: "Caso 95 - TCE Grave com Desvio de Linha Média",
+    description: "Paciente 23 anos, acidente de moto. Não abre olhos, sem fala, extensão dos braços à dor. Pupilas anisocóricas, uma não reage.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 5 (E1V1M2P1) - Sinais de herniação cerebral com deterioração neurológica rápida."
+},
+{
+    title: "Caso 96 - Crise de Histeria",
+    description: "Mulher 22 anos, 'inconsciente' após briga, olhos fechados firmemente, se movimenta quando chamada, fala desconexa. Pupilas normais.",
+    correctAnswers: { eye: 1, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 10 (E1V4M5P0) - Comportamento voluntário simulado, não neurológico."
+},
+{
+    title: "Caso 97 - Intoxicação por Monóxido de Carbono",
+    description: "Família exposta a gás. Homem inconsciente, não abre olhos, sem fala, extensão à dor. Pupilas midriáticas lentas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 5 (E1V1M2P1) - Hipóxia cerebral grave por intoxicação ambiental."
+},
+{
+    title: "Caso 98 - Síndrome Locked-in",
+    description: "Homem 50 anos, acordado, move olhos verticalmente, sem fala, sem resposta motora ao comando. Pupilas normais.",
+    correctAnswers: { eye: 4, verbal: 1, motor: 1, pupil: 0 },
+    explanation: "ECG 6 (E4V1M1P0) - Consciente, mas paralisado por lesão de ponte, pupilas preservadas indicam função cortical."
+},
+{
+    title: "Caso 99 - AVC Isquêmico Extenso em Idosa",
+    description: "Idosa 84 anos, encontrada inconsciente, não abre olhos, sem fala, extensão à dor. Pupilas isocóricas e lentas.",
+    correctAnswers: { eye: 1, verbal: 1, motor: 2, pupil: 1 },
+    explanation: "ECG 5 (E1V1M2P1) - AVC extenso com rebaixamento grave do nível de consciência."
+},
+{
+    title: "Caso 100 - Meningite Bacteriana",
+    description: "Jovem de 19 anos, febre alta, rigidez de nuca, confusão. Olhos abrem ao som, frases confusas, localiza dor. Pupilas normais.",
+    correctAnswers: { eye: 3, verbal: 4, motor: 5, pupil: 0 },
+    explanation: "ECG 12 (E3V4M5P0) - Sinais de irritação meníngea com resposta neurológica parcialmente preservada."
+}
+
+];
+        
+        let currentCase;
+        
+        // Alternar exibição da tabela de ajuda
+        function toggleHelp() {
+            const helpTable = document.getElementById('help-table');
+            const helpBtn = document.getElementById('help-btn');
+            
+            if (helpTable.style.display === 'block') {
+                helpTable.style.display = 'none';
+                helpBtn.textContent = 'Mostrar Ajuda';
+            } else {
+                helpTable.style.display = 'block';
+                helpBtn.textContent = 'Ocultar Ajuda';
+            }
+        }
+        
+        // Gerar um novo caso aleatório
+        function generateNewCase() {
+            // Resetar o formulário
+            document.getElementById('eye-response').value = '';
+            document.getElementById('verbal-response').value = '';
+            document.getElementById('motor-response').value = '';
+            document.getElementById('pupil-response').value = '';
+            document.getElementById('feedback').style.display = 'none';
+            
+            // Selecionar um caso aleatório
+            currentCase = cases[Math.floor(Math.random() * cases.length)];
+            
+            // Exibir o caso
+            document.getElementById('case-title').textContent = currentCase.title;
+            document.getElementById('case-description').textContent = currentCase.description;
+        }
+        
+        // Verificar as respostas do usuário
+        function checkAnswers() {
+            const eyeResponse = parseInt(document.getElementById('eye-response').value);
+            const verbalResponse = parseInt(document.getElementById('verbal-response').value);
+            const motorResponse = parseInt(document.getElementById('motor-response').value);
+            const pupilResponse = parseInt(document.getElementById('pupil-response').value);
+            
+            // Verificar se todas as respostas foram selecionadas
+            if (isNaN(eyeResponse) || isNaN(verbalResponse) || isNaN(motorResponse) || isNaN(pupilResponse)) {
+                alert("Por favor, responda todas as questões antes de verificar.");
+                return;
+            }
+            
+            const feedbackDiv = document.getElementById('feedback');
+            const resultText = document.getElementById('result-text');
+            const explanationDiv = document.getElementById('explanation');
+            const scoreDiv = document.getElementById('score');
+            
+            // Calcular acertos
+            let correctCount = 0;
+            if (eyeResponse === currentCase.correctAnswers.eye) correctCount++;
+            if (verbalResponse === currentCase.correctAnswers.verbal) correctCount++;
+            if (motorResponse === currentCase.correctAnswers.motor) correctCount++;
+            if (pupilResponse === currentCase.correctAnswers.pupil) correctCount++;
+            
+            // Exibir feedback
+            if (correctCount === 4) {
+                feedbackDiv.className = "feedback correct";
+                resultText.innerHTML = "Parabéns! Você acertou todas as respostas!";
+            } else {
+                feedbackDiv.className = "feedback incorrect";
+                resultText.innerHTML = `Você acertou ${correctCount} de 4 respostas.`;
+            }
+            
+            // Mostrar comparação das respostas
+            document.getElementById('user-eye').textContent = eyeResponse;
+            document.getElementById('correct-eye').textContent = currentCase.correctAnswers.eye;
+            document.getElementById('user-verbal').textContent = verbalResponse;
+            document.getElementById('correct-verbal').textContent = currentCase.correctAnswers.verbal;
+            document.getElementById('user-motor').textContent = motorResponse;
+            document.getElementById('correct-motor').textContent = currentCase.correctAnswers.motor;
+            document.getElementById('user-pupil').textContent = pupilResponse;
+            document.getElementById('correct-pupil').textContent = currentCase.correctAnswers.pupil;
+            
+            // Destacar respostas corretas/incorretas
+            highlightComparison('eye-comparison', eyeResponse, currentCase.correctAnswers.eye);
+            highlightComparison('verbal-comparison', verbalResponse, currentCase.correctAnswers.verbal);
+            highlightComparison('motor-comparison', motorResponse, currentCase.correctAnswers.motor);
+            highlightComparison('pupil-comparison', pupilResponse, currentCase.correctAnswers.pupil);
+            
+            // Mostrar explicação
+            explanationDiv.innerHTML = currentCase.explanation;
+            
+            // Calcular pontuações (subtraindo o reflexo pupilar)
+            const userTotal = (eyeResponse + verbalResponse + motorResponse) - pupilResponse;
+            const correctTotal = (currentCase.correctAnswers.eye + currentCase.correctAnswers.verbal + currentCase.correctAnswers.motor) - currentCase.correctAnswers.pupil;
+            
+            scoreDiv.innerHTML = `
+                Sua pontuação: (E${eyeResponse} + V${verbalResponse} + M${motorResponse}) - P${pupilResponse} = ${userTotal}<br>
+                Pontuação correta: (E${currentCase.correctAnswers.eye} + V${currentCase.correctAnswers.verbal} + M${currentCase.correctAnswers.motor}) - P${currentCase.correctAnswers.pupil} = ${correctTotal}
+            `;
+            
+            feedbackDiv.style.display = 'block';
+        }
+        
+        // Destacar comparação de respostas
+        function highlightComparison(elementId, userAnswer, correctAnswer) {
+            const element = document.getElementById(elementId);
+            if (userAnswer === correctAnswer) {
+                element.classList.add('correct-answer');
+                element.classList.remove('incorrect-answer');
+            } else {
+                element.classList.add('incorrect-answer');
+                element.classList.remove('correct-answer');
+            }
+        }
+        
+        // Gerar o primeiro caso ao carregar a página
+        window.onload = generateNewCase;
+    </script>
+</body>
+</html>
